@@ -1,0 +1,35 @@
+
+Scénario d'attaque :
+Chronologie du scénario (8 phases)
+
+Phase 0. Reconnaissance (J-15 à J-1)
+L’attaquant achète ou collecte des identifiants d’un prestataire tiers payant, soit sur un info-stealer, soit sur un forum cybercriminel. Il identifie que ce prestataire dispose d’un accès distant permanent vers au moins une officine, comme dans l’incident Pharmaland.
+Techniques ATT&CK : T1589 (recherche de victime), T1591, T1593.
+
+Phase 1. Accès initial par le compte du prestataire (J, 19h-21h, hors horaires d’ouverture)
+Connexion via l’outil de prise en main à distance installé sur PC-TITULAIRE, avec les identifiants compromis. Pas de MFA, comme dans le cas de l’Hôpital de la Loire. L’horaire choisi recoupe l’incident de la Toussaint que vous aviez identifié : un moment de faible présence humaine.
+T1133 (accès par service externe), T1078 (comptes valides).
+
+Phase 2. Établissement de la persistance
+L’attaquant dépose un outil de commande et contrôle léger (à l’image de SystemBC à Brest) dans un répertoire peu surveillé du poste, par exemple un dossier temporaire utilisateur.
+T1547 (persistance), T1105 (transfert d’outils).
+
+Phase 3. Découverte et collecte d’identifiants
+Il utilise un outil d’extraction de secrets en mémoire pour récupérer d’autres comptes présents sur la machine, notamment un compte de service utilisé par le LGO vers DC01 ou SRV-LGO.
+T1003 (dumping des identifiants), T1087 (découverte des comptes).
+
+Phase 4. Mouvement latéral vers le LAN serveurs
+Avec le compte de service, l’attaquant rejoint DC01 ou SRV-LGO. C’est là qu’intervient la faiblesse de conception que je vous proposais : un contrôle d’accès insuffisant dans l’application du LGO, qui permet à un compte valide d’atteindre les dossiers d’autres officines ou d’autres utilisateurs, comme documenté par le CERT Santé.
+T1021 (services distants), T1210 (exploitation de services internes).
+
+Phase 5. Exfiltration
+Extraction de la base patients (NIR, ordonnances, coordonnées), avec un volume proche de celui des officines réelles. L’exfiltration se fait par petits paquets pour limiter le pic de trafic détectable.
+T1567 (exfiltration vers un service web), T1030 (limitation de taille des transferts).
+
+Phase 6. Reconnaissance avant impact
+L’attaquant identifie SRV-BACKUP, condition classique avant un ransomware : neutraliser les sauvegardes avant de chiffrer.
+T1518, T1082 (découverte système).
+
+Phase 7. Impact : chiffrement et double extorsion
+Chiffrement simulé des partages de SRV-LGO et suppression ou altération de SRV-BACKUP. Une note de rançon apparaît, avec menace de publication des données déjà exfiltrées, comme dans la plupart des cas hospitaliers récents (Corbeil-Essonnes, Versailles).
+T1486 (chiffrement), T1490 (inhibition de la récupération), T1657 (extorsion financière).
